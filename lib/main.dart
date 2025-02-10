@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:message_f/firebase_options.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+
+FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Gère les messages reçus lorsque l'application est en arrière-plan
   print("Message reçu en arrière-plan: ${message.messageId}");
 }
 
@@ -14,77 +17,43 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Initialiser Firebase Messaging
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-  // Demander la permission pour recevoir des notifications
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    print("Permission accordée pour les notifications");
-  } else {
-    print("Permission refusée");
-  }
-
-  // Obtenir le token FCM de l'appareil
-  String? token = await messaging.getToken();
-  print("FCM Token: $token");
-
-  // Gérer les messages en arrière-plan
+  await messaging.requestPermission(alert: true, badge: true, sound: true);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(const MainApp());
 }
 
-class MainApp extends StatefulWidget {
+class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   @override
-  _MainAppState createState() => _MainAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Messaging Firebase',
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('en', 'US'),
+        Locale('fr', 'FR'), // Ajoute d'autres langues si nécessaire
+      ],
+      home: const HomePage(),
+    );
+  }
 }
 
-class _MainAppState extends State<MainApp> {
-  @override
-  void initState() {
-    super.initState();
-
-    // Écouter les messages reçus lorsque l'application est en premier plan
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Message reçu en premier plan: ${message.notification?.title}");
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(message.notification?.title ?? "Notification"),
-          content: Text(message.notification?.body ?? "Pas de message"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
-            ),
-          ],
-        ),
-      );
-    });
-
-    // Écouter les messages lorsque l'application est ouverte via une notification
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Message ouvert via une notification: ${message.data}");
-    });
-  }
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('FCM avec Flutter 🚀'),
-        ),
-      ),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Firebase Messaging')),
+      body: const Center(child: Text('FCM avec Flutter 🚀')),
     );
   }
 }
