@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:message_f/firebase_api.dart';
+import 'package:message_f/pages/home_page.dart';
 import 'package:message_f/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:message_f/pages/home_page.dart';
 import 'package:message_f/pages/notification_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -33,7 +33,7 @@ class MainApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       home: HomePage(),
       routes: {
-        NotificationPage.route: (context) => NotificationPage(),
+        '/notification-screen': (context) => NotificationPage(),
       },
     );
   }
